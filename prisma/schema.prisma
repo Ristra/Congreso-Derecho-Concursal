@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Configuracion {
+  id                 Int      @id @default(1)
+  quorum_base        Decimal? @default(100.00) @db.Decimal(10, 2)
+  video_url          String?  @db.Text
+  votacion_activa_id Int?
+
+  @@map("configuracion")
+}
+
+model Documento {
+  id       Int      @id @default(autoincrement())
+  nombre   String?  @db.VarChar(255)
+  filename String?  @db.VarChar(255)
+  fecha    DateTime @default(now()) @db.Timestamp(0)
+
+  @@map("documentos")
+}
+
+model Opcion {
+  id          Int       @id @default(autoincrement())
+  votacion_id Int?
+  texto       String?   @db.VarChar(50)
+  
+  // Relación con Votacion
+  votacion    Votacion? @relation(fields: [votacion_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "opciones_ibfk_1")
+
+  @@index([votacion_id], map: "votacion_id")
+  @@map("opciones")
+}
+
+model Poder {
+  id               Int     @id @default(autoincrement())
+  id_representante Int
+  id_representado  Int
+  
+  // Relaciones con Usuario
+  representante    Usuario @relation("Representante", fields: [id_representante], references: [id], onUpdate: Restrict, map: "poderes_ibfk_1")
+  representado     Usuario @relation("Representado", fields: [id_representado], references: [id], onUpdate: Restrict, map: "poderes_ibfk_2")
+
+  @@index([id_representado], map: "id_representado")
+  @@index([id_representante], map: "id_representante")
+  @@map("poderes")
+}
+
+model Usuario {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @db.VarChar(100)
+  email       String    @unique(map: "email") @db.VarChar(100)
+  password    String    @db.VarChar(100)
+  coeficiente Decimal?  @default(1.0000) @db.Decimal(10, 4)
+  rol         usuarios_rol? @default(User)
+  estado      usuarios_estado? @default(Offline)
+
+  // Relaciones inversas
+  poderes_dados     Poder[] @relation("Representado")
+  poderes_recibidos Poder[] @relation("Representante")
+  votos             Voto[]
+
+  @@map("usuarios")
+}
+
+model Votacion {
+  id             Int       @id @default(autoincrement())
+  fecha          DateTime  @default(now()) @db.Timestamp(0)
+  pregunta       String?   @db.VarChar(255)
+  
+  // Mapeamos la columna 'opciones' (texto) para que no choque
+  opciones_texto String?   @db.Text @map("opciones")
+  
+  activa         Boolean?  @default(true)
+
+  // Relación con la tabla opciones
+  lista_opciones Opcion[]
+  votos          Voto[]
+
+  @@map("votaciones")
+}
+
+model Voto {
+  id          Int       @id @default(autoincrement())
+  votacion_id Int?
+  usuario_id  Int?
+  respuesta   String?   @db.VarChar(50)
+  coeficiente Decimal?  @db.Decimal(10, 4)
+  
+  votacion    Votacion? @relation(fields: [votacion_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "votos_ibfk_1")
+  usuario     Usuario?  @relation(fields: [usuario_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "votos_ibfk_2")
+
+  @@index([usuario_id], map: "usuario_id")
+  @@index([votacion_id], map: "votacion_id")
+  @@map("votos")
+}
+
+enum usuarios_rol {
+  User
+  Admin
+}
+
+enum usuarios_estado {
+  Online
+  Offline
+}

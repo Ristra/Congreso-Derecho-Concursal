@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  /* Forzamos colores de Modo Claro siempre */
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ELIMINAMOS EL BLOQUE @media (prefers-color-scheme: dark) PARA EVITAR EL TEXTO BLANCO */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* REGLA DE SEGURIDAD: */
+/* Esto fuerza a que todos los inputs tengan texto negro sí o sí */
+input, select, textarea {
+  color: #111827; /* Gris muy oscuro / Negro */
+}
+
+.border-blue-500 {
+    border-color: #C6D220;
+}
+
+.from-blue-800 {
+    --tw-gradient-from: #C6D220;
+
+}
+.border-blue-600 {
+    border-color: #C6D220;
+}
+
+@keyframes marquee {
+  0% { transfrom: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
