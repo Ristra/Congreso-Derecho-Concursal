@@ -29,7 +29,8 @@ export async function POST(request) {
                 email,
                 nombre,
                 password,
-                correo_enviado
+                correo_enviado,
+                cedula
             FROM usuarios
             WHERE correo_enviado = 0 AND rol = 'user'`
         );
@@ -37,8 +38,9 @@ export async function POST(request) {
 
         usuarios.forEach((usuario, index) => {
             console.log(`USUARIO ${index + 1}:`);
-            console.log(`ID: ${usuario.id}`);
+            console.log(`ID: ${usuario.id}`); 
             console.log(`Email: ${usuario.email}`);
+            console.log(`Cedula: ${usuario.cedula}`);
             console.log(`Nombre ${usuario.nombre}`);
             console.log(`Password existe? ${usuario.hasOwnProperty('password')}`);
 
@@ -82,7 +84,7 @@ export async function POST(request) {
                 // Renderizado
                 const correoHtml = await render(CredencialesTemplate({
                     nombreUsuario: usuario.nombre,
-                    correoUsuario: usuario.email,
+                    correoUsuario: usuario.cedula,
                     passwordGenerada: passwordPlano,
                     urlLogin: 'https://andescoeventos.com/login'
                 }));
@@ -91,7 +93,7 @@ export async function POST(request) {
                 await transporter.sendMail({
                     from: `"Seminario Andesco" <${process.env.SMTP_USER}>`,
                     to: usuario.email,
-                    subject: '🔑 Tus Credenciales de Acceso - 10° Seminario Andesco',
+                    subject: 'Bienvenido a el XX Congreso Colombiano de Derecho Concursal',
                     html: correoHtml,
                 });
 

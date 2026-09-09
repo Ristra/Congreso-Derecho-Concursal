@@ -22,13 +22,14 @@ export async function POST(request) {
       const nit = u['NIT'] || u['nit'] || '';
       const email = u['Email'] || u['email'];
       const password = u['Password'] || u['password'];
+      const cedula = u['Cedula'] || u['cedula'];
 
 
 
       const coeficiente = u['Coeficiente'] || u['coeficiente'] || 1.00;
       const rol = u['Rol'] || u['rol'] || 'User';
 
-      if (!email || (!nombre && !empresa)) {
+      if (!email || (!nombre && !empresa && !cedula)) {
         errorCount++;
         continue;
       }
@@ -36,7 +37,7 @@ export async function POST(request) {
       let userId = null;
 
       try {
-        const [existing] = await pool.query('SELECT id FROM usuarios WHERE email = ?', [email]);
+        const [existing] = await pool.query('SELECT id FROM usuarios WHERE cedula = ?', [cedula]);
 
         let passwordToStore = null;
 
@@ -49,8 +50,8 @@ export async function POST(request) {
 
         if (existing.length === 0) {
           const [result] = await pool.query(
-            'INSERT INTO usuarios (nombre, nombre_empresa, nit, email, password, coeficiente, rol, estado) VALUES (?, ?, ?, ?,  ?, ?, ?, ?)',
-            [nombre, empresa, nit, email, passwordToStore, coeficiente, rol, 'Offline']
+            'INSERT INTO usuarios (nombre, nombre_empresa, nit, email, password, coeficiente, rol, estado, cedula) VALUES (?, ?, ?, ?,  ?, ?, ?, ?, ?)',
+            [nombre, empresa, nit, email, passwordToStore, coeficiente, rol, 'Offline', cedula]
           );
           userId = result.insertId;
           createdCount++;
@@ -59,6 +60,7 @@ export async function POST(request) {
             nombre: nombre || empresa,
             email: email,
             password: passwordToStore,
+            cedula: cedula,
 
           });
         } else {

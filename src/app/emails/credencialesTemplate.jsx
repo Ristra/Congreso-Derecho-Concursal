@@ -27,7 +27,7 @@ export default function CredencialesTemplate({
         <Html>
             <Head />
             {/* Texto que aparece en bandeja de entrada antes de abrir el correo */}
-            <Preview>Tus credenciales de acceso para el 10° Seminario Andesco</Preview>
+            <Preview>Bievenido al XX Congreso Colombiano de Derecho Concursal</Preview>
 
             <Tailwind>
                 <Body className="bg-gray-100 font-sans my-auto mx-auto px-2">
@@ -46,20 +46,19 @@ export default function CredencialesTemplate({
 
                         <Section className="text-center mb-6">
                             <Heading className="text-2xl font-bold text-black-700 m-0">
-                                Bienvenido
+                                !Bienvenido
+                                {nombreUsuario}!
                             </Heading>
-                            <Text className="text-gray-800 font-medium m-0 mt-1 text-lg">
-                                3° Seminario Oficiales de Cumplimiento
-                            </Text>
+                            
                         </Section>
 
                         {/* Saludo */}
                         <Heading className="text-xl font-semibold text-gray-800">
                             ¡Hola {nombreUsuario}!
                         </Heading>
-                        <Text className="text-gray-600 text-base leading-relaxed">Recuerde que el próximo 30 de Julio a las 8:30 A.M. podrá ingresar al 3° Seminario Oficiales de Cumplimiento</Text>
+                        <Text className="text-gray-600 text-base leading-relaxed">Recuerde que el próximo 17, 18 y 19 de Septiembre de 2026 podrá ingresar al <strong>Congreso Colombiano de Derecho Concursal 2026</strong> de manera virtual.</Text>
 
-                        <Text className="text-gray-600 text-base leading-relaxed">Para ingresar al seminario por favor seguir los siguientes pasos:</Text>
+                        <Text className="text-gray-600 text-base leading-relaxed" style={{paddingTop: 30}}>Para ingresar al seminario por favor seguir los siguientes pasos:</Text>
 
                         <Text className="text-gray-600 text-base leading-relaxed">Haga Click en el botón "Ingresar a la Plataforma", luego diligencie sus datos de ingreso y ¡Listo!</Text>
 
@@ -67,7 +66,7 @@ export default function CredencialesTemplate({
                         {/* Caja de Credenciales */}
                         <Section className="bg-blue-50 rounded-md p-6 my-6 text-center border border-blue-100">
                             <Text className="text-gray-800 m-0 text-base">
-                                <strong>Correo:</strong> {correoUsuario}
+                                <strong>Usuario:</strong> {correoUsuario}
                             </Text>
                             <text className="text-gray-800 m-0 mt-2 text-base">
                                 <strong>Contraseña</strong> <span className="font-mono bg-white px-2 py-1 rounded border border-gray-200">{passwordGenerada}</span>
@@ -80,7 +79,7 @@ export default function CredencialesTemplate({
                                 href={urlLogin}
                                 className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-md no-underline text-center block w-full max-w-[250px] mx-auto"
                             >
-                                Ingresar a la Plataforma
+                                INGRESAR AL CONGRESO
                             </Button>
                         </Section>
 
@@ -102,12 +101,12 @@ export default function CredencialesTemplate({
                         <ul className="list-disc pl-6 text-gray-700 text-[15px] leading-[24px] mb-6">
                             <li className="mb-2">Por favor tenga en cuenta que con su usuario, solo puede conectarse por un solo dispositivo a la vez.</li>
                             <li className="mb-2">Le recomendamos conectarse unos minutos antes para que pueda revisar los requerimientos técnicos y no tenga ningún inconveniente</li>
-                            <li className="mb-2">Si tiene alguna duda por favor escribir al correo seminario@andesco.org.co o contactarse al WhatsApp +573508120915</li>
+                            <li className="mb-2">Si tiene alguna duda por favor contactarse al WhatsApp +57 3145780935</li>
                         </ul>
 
                         <Text className="text-xs text-gray-500 text-center leading-relaxed">
                             <br /><br />
-                            Evento creado por: www.andescoeventos.com
+                            www.derechoconcursal.org
                         </Text>
                     </Section>
 

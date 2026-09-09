@@ -9,9 +9,9 @@ import crypto from 'crypto';
 export async function POST(request) {
   try {
     // Extraer credenciales enviadas por el usuario
-    const { email, password } = await request.json();
+    const { cedula, password } = await request.json();
     
-    if (!email || !password) {
+    if (!cedula || !password) {
       return NextResponse.json({error: 'Faltan credenciales'}, { status: 400 });
     }
 
@@ -20,8 +20,8 @@ export async function POST(request) {
 
     // Buscamos al usuario en la tabla usuarios
     const [rows] = await pool.query(
-      'SELECT * FROM usuarios WHERE email = ?',
-      [email]
+      'SELECT * FROM usuarios WHERE cedula = ?',
+      [cedula]
     );
 
     if (rows.length === 0) {

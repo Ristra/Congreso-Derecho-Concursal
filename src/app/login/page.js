@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [cedula, setCedula] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password: password.trim() }),
+        body: JSON.stringify({ cedula: cedula.trim(), password: password.trim() }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -108,16 +108,16 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Correo Electrónico
+              <label htmlFor="cedula" className="block text-sm font-medium text-gray-700">
+                Usuario
               </label>
               <div className="mt-2">
                 <input
-                  id="email" name="email" type="email"
-                  autoComplete="email" required
-                  value={email} onChange={(e) => setEmail(e.target.value)}
+                  id="cedula" name="cedula" type="int"
+                  autoComplete="cedula" required
+                  value={cedula} onChange={(e) => setCedula(e.target.value)}
                   className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#0d1e3d] focus:border-[#0d1e3d] sm:text-sm transition-all bg-gray-50 hover:bg-white"
-                  placeholder="nombre@empresa.com"
+                  placeholder="10745562"
                 />
               </div>
             </div>
