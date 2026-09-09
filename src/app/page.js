@@ -10,7 +10,7 @@ export default function SalaVirtual() {
   const [user, setUser] = useState(null);
   const isAdmin = user?.rol?.toLowerCase() === 'admin';
   const [isTheaterMode, setIsTheaterMode] = useState(false);
-
+  const [iniciarVideo, setIniciarVideo] = useState(false);
   const [activeAdminTab, setActiveAdminTab] = useState('qa'); // Pestañas: 'QA', 'Config', 'Votaciones'
   const [activeViewTab, setActiveViewTab] = useState('preguntas');  // Controla chat vs Documentos para todos
 
@@ -52,51 +52,51 @@ export default function SalaVirtual() {
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
 
   const [mostrarModalInicio, setMostrarModalInicio] = useState(false);
-  const [datosInforme, setDatosInforme] = useState ({
+  const [datosInforme, setDatosInforme] = useState({
     cliente_empresa: '',
     nombre_evento: '',
     fecha_evento_texto: ''
   });
 
   const confirmarInicioEvento = async (e) => {
-  // 1. Bloqueamos cualquier recarga fantasma del navegador
-  if (e) e.preventDefault(); 
+    // 1. Bloqueamos cualquier recarga fantasma del navegador
+    if (e) e.preventDefault();
 
-  // 2. Armamos el paquete explícitamente antes de enviarlo
-  const paqueteDeDatos = {
-    action: 'start_assembly',
-    cliente_empresa: datosInforme.cliente_empresa,
-    nombre_evento: datosInforme.nombre_evento,
-    fecha_evento_texto: datosInforme.fecha_evento_texto
-  };
+    // 2. Armamos el paquete explícitamente antes de enviarlo
+    const paqueteDeDatos = {
+      action: 'start_assembly',
+      cliente_empresa: datosInforme.cliente_empresa,
+      nombre_evento: datosInforme.nombre_evento,
+      fecha_evento_texto: datosInforme.fecha_evento_texto
+    };
 
-  console.log("ENVIANDO AL BACKEND:", paqueteDeDatos); // <-- Revisar en consola del navegador
+    console.log("ENVIANDO AL BACKEND:", paqueteDeDatos); // <-- Revisar en consola del navegador
 
-  try {
-    const res = await fetch('/api/asamblea', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json' 
-      },
-      body: JSON.stringify(paqueteDeDatos)
-    });
+    try {
+      const res = await fetch('/api/asamblea', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(paqueteDeDatos)
+      });
 
-    console.log("RESPUESTA STATUS:", res.status);
+      console.log("RESPUESTA STATUS:", res.status);
 
-    if (res.ok) {
-      alert("¡Evento iniciado con éxito y datos guardados!");
-      setMostrarModalInicio(false);
-      
-      // window.location.reload(); 
-    } else {
-      const errorData = await res.json();
-      alert("Error del servidor: " + (errorData.error || 'Desconocido'));
+      if (res.ok) {
+        alert("¡Evento iniciado con éxito y datos guardados!");
+        setMostrarModalInicio(false);
+
+        // window.location.reload(); 
+      } else {
+        const errorData = await res.json();
+        alert("Error del servidor: " + (errorData.error || 'Desconocido'));
+      }
+    } catch (error) {
+      console.error("Fallo de red:", error);
     }
-  } catch (error) {
-    console.error("Fallo de red:", error);
-  }
-};
+  };
 
   /*const startAssembly = async () => {
     if (!confirm('¿Estás seguro de INICIAR el Evento? Esto marcará la hora de inicio oficial.')) return;
@@ -401,6 +401,7 @@ export default function SalaVirtual() {
       }
     }
 
+    {/*}
     if (url.includes('vimeo.com')) {
       const vimeoMatch = url.match(/vimeo\.com\/(?:video\/|event\/)?(\d+)/);
       const vimeoId = vimeoMatch ? vimeoMatch[1] : null;
@@ -409,6 +410,46 @@ export default function SalaVirtual() {
         return (
           <iframe
             src={`https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=0&controls=${showControls}&title=0&byline=0&portrait=0`}
+            className="w-full h-full absolute top-0 left-0"
+            frameBorder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+          />
+        );
+      }
+    }*/}
+
+    if (url.includes('vimeo.com')) {
+      // 1. Verificamos si es un evento en vivo
+      const isEvent = url.includes('/event/');
+
+      // 2. Extraemos el ID del video o del evento
+      const vimeoMatch = url.match(/vimeo\.com\/(?:video\/|event\/)?(\d+)/);
+      const vimeoId = vimeoMatch ? vimeoMatch[1] : null;
+
+      if (vimeoId) {
+        if (!iniciarVideo) {
+          return (
+            <div className="absolute inset-0 bg-zinc-900/90 flex flex-col items-center justify-center text-white p-6 z-10 backdrop-blur-sm">
+              <div
+                onClick={() => setIniciarVideo(true)}
+                className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center mb-6 text-4xl shadow-lg cursor-pointer hover:scale-110 hover:bg-blue-500 transition-all duration-300"
+              >
+                ▶️
+              </div>
+              <h3 className="text-2xl font-bold mb-2">La transmisión está lista</h3>
+              <p className="text-gray-400 text-sm mb-8">Haz clic para unirte</p>
+            </div>
+          );
+        }
+        // 3. Construimos la URL correcta según el tipo
+        const iframeSrc = isEvent
+          ? `https://vimeo.com/event/${vimeoId}/embed?autoplay=1&muted=0&controls=${showControls}`
+          : `https://player.vimeo.com/video/${vimeoId}?autoplay=1&muted=0&controls=${showControls}&title=0&byline=0&portrait=0`;
+
+        return (
+          <iframe
+            src={iframeSrc}
             className="w-full h-full absolute top-0 left-0"
             frameBorder="0"
             allow="autoplay; fullscreen; picture-in-picture"
@@ -449,7 +490,7 @@ export default function SalaVirtual() {
     }
   };
 
-  const camposCompletos = 
+  const camposCompletos =
     datosInforme.cliente_empresa.trim() !== '' &&
     datosInforme.nombre_evento.trim() !== '' &&
     datosInforme.fecha_evento_texto.trim() !== '';
@@ -712,7 +753,7 @@ export default function SalaVirtual() {
                                       className="mt-1 w-full border rounded p-2"
                                       placeholder="Ej.  ASOCIACIÓN NACIONAL DE EMPRESAS DE SERVICIOS PÚBLICOS Y COMUNICACIONES-ANDESCO"
                                       value={datosInforme.cliente_empresa}
-                                      onChange={(e) => setDatosInforme({...datosInforme, cliente_empresa: e.target.value})}
+                                      onChange={(e) => setDatosInforme({ ...datosInforme, cliente_empresa: e.target.value })}
                                     />
                                   </div>
                                   <div>
@@ -721,7 +762,7 @@ export default function SalaVirtual() {
                                       className="mt-1 w-full border rounded p-2"
                                       placeholder="Ej. 3° Seminario de Oficiales de Cumplimiento"
                                       value={datosInforme.nombre_evento}
-                                      onChange={(e) => setDatosInforme({...datosInforme, nombre_evento: e.target.value})}
+                                      onChange={(e) => setDatosInforme({ ...datosInforme, nombre_evento: e.target.value })}
                                     />
                                   </div>
                                   <div>
@@ -730,7 +771,7 @@ export default function SalaVirtual() {
                                       className="mt-1 w-full border rounded p-2"
                                       placeholder="Ej. 30 de Julio de 2026"
                                       value={datosInforme.fecha_evento_texto}
-                                      onChange={(e) => setDatosInforme({...datosInforme, fecha_evento_texto: e.target.value})}
+                                      onChange={(e) => setDatosInforme({ ...datosInforme, fecha_evento_texto: e.target.value })}
                                     />
                                   </div>
                                 </div>
@@ -747,15 +788,15 @@ export default function SalaVirtual() {
                                     onClick={(e) => confirmarInicioEvento(e)}
                                     disabled={!camposCompletos}
                                     className={`px-4 py-2 rounded font-bold transition-colors duration-200 
-                                      ${camposCompletos 
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer' 
+                                      ${camposCompletos
+                                        ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
                                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                       }`}
-                                    
+
                                   >
                                     Confirmar e Iniciar Evento
                                   </button>
-                                </div>                             
+                                </div>
                               </div>
                             </div>
                           )}

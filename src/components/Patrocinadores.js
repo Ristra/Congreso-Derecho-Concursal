@@ -7,24 +7,24 @@ export default function Patrocinadores() {
 
     useEffect(() => {
         const cargarBanner = async () => {
-    try {
-        const res = await fetch('/api/bannerPatrocinador', { cache: 'no-store' });
-        if (res.ok) {
-            const data = await res.json();
-            if (data.url) {
-                // 1. Extraemos solo el nombre del archivo (todo lo que está después del último /)
-                const nombreArchivo = data.url.split('/').pop();
-                
-                // 2. Apuntamos al túnel que SÍ EXISTE y SÍ SABE LEER: /api/banner/
-                setBannerUrl(`/login/banner/${nombreArchivo}?t=${new Date().getTime()}`);
+            try {
+                const res = await fetch('/api/bannerPatrocinador', { cache: 'no-store' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.url) {
+                        // 1. Extraemos solo el nombre del archivo (todo lo que está después del último /)
+                        const nombreArchivo = data.url.split('/').pop();
+
+                        // 2. Apuntamos al túnel que SÍ EXISTE y SÍ SABE LEER: /api/banner/
+                        setBannerUrl(`/login/banner/${nombreArchivo}?t=${new Date().getTime()}`);
+                    }
+                }
+            } catch (error) {
+                console.error("Error al cargar:", error);
+            } finally {
+                setCargando(false);
             }
-        }
-    } catch (error) {
-        console.error("Error al cargar:", error);
-    } finally {
-        setCargando(false);
-    }
-};
+        };
 
         cargarBanner();
     }, []);
@@ -46,7 +46,7 @@ export default function Patrocinadores() {
         // Ahora apuntamos al túnel que ya creamos para leer archivos de esa carpeta
         // Asumiendo que tu túnel está en /api/banner/[filename]
         setBannerUrl(`/login/banner/${nombreArchivo}?t=${new Date().getTime()}`);
-        
+
     }
 
     const listaDeLogos = [bannerUrl, bannerUrl, bannerUrl, bannerUrl];
@@ -56,11 +56,18 @@ export default function Patrocinadores() {
             <div className="flex overflow-hidden relative">
                 <div className="animate-marquee flex items-center grayscale hover:grayscale-0 transition-all duration-500">
                     {listaDeLogos.map((logo, index) => (
-                        <div key={index} className="flex-shrink-0 w-[80vw] md:w-[900px] h-32 flex items-center justify-center">
+                        <div key={index} className="flex-shrink-0 w-[80vw] md:w-[3000px] h-26 flex items-center justify-center">
                             <img
                                 src={logo}
                                 alt="Patrocinadores"
-                                className="w-full h-full object-contain"
+                                className="object-scale-down"
+                                style={{
+                                    padding: 0,
+                                    margin: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    display: 'block'
+                                }}
                             />
                         </div>
                     ))}
