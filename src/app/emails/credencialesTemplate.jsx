@@ -19,9 +19,9 @@ import * as React from 'react';
 // Parámetros de ejemplo
 export default function CredencialesTemplate({
     nombreUsuario = "Juan Perez",
-    correoUsuario = "juan@ejemplo.com",
-    passwordGenerada = "Andesco2026*",
-    urlLogin = 'https://andescoeventos.com/login'
+    correoUsuario = "1000950324",
+    passwordGenerada = "1000950324",
+    urlLogin = 'https://congreso.derechoconcursal.org/login'
 }) {
     return (
         <Html>
@@ -36,41 +36,55 @@ export default function CredencialesTemplate({
 
                         <Section className="text-center mt-2 mb-2">
                             <Img
-                                src="https://andescoeventos.com/images/bannerCorreo.jpeg"
+                                src="https://congreso.derechoconcursal.org/images/bannerCorreo.png"
                                 width="455"
                                 height="210"
-                                alt="Banner 10° Seminario Andesco"
+                                alt="Congreso Derecho Concursal"
                                 className="mx-auto"
                             />
                         </Section>
 
                         <Section className="text-center mb-6">
                             <Heading className="text-2xl font-bold text-black-700 m-0">
-                                !Bienvenido
-                                {nombreUsuario}!
+                                ¡Bienvenido(a)
                             </Heading>
-                            
+                            <Heading className="text-2xl font-bold text-black-700 m-0">
+                                <strong>{nombreUsuario}!</strong>
+                            </Heading>
+
                         </Section>
 
-                        {/* Saludo */}
-                        <Heading className="text-xl font-semibold text-gray-800">
-                            ¡Hola {nombreUsuario}!
-                        </Heading>
                         <Text className="text-gray-600 text-base leading-relaxed">Recuerde que el próximo 17, 18 y 19 de Septiembre de 2026 podrá ingresar al <strong>Congreso Colombiano de Derecho Concursal 2026</strong> de manera virtual.</Text>
 
-                        <Text className="text-gray-600 text-base leading-relaxed" style={{paddingTop: 30}}>Para ingresar al seminario por favor seguir los siguientes pasos:</Text>
+                        <Text className="text-gray-600 text-base leading-relaxed" style={{ paddingTop: 30 }}>Para ingresar por favor seguir los siguientes pasos:</Text>
 
-                        <Text className="text-gray-600 text-base leading-relaxed">Haga Click en el botón "Ingresar a la Plataforma", luego diligencie sus datos de ingreso y ¡Listo!</Text>
+                        {/* Lista corregida: Sin el componente Text envolviéndola */}
+                        <ol className="list-decimal pl-5 text-gray-600 text-base leading-relaxed">
+                            <li className="mb-2">Haga click en el botón de abajo <strong>"INGRESAR AL CONGRESO".</strong></li>
+                            <li className="mb-2">Diligencie sus <strong>datos de ingreso</strong> y ¡listo!</li>
+                        </ol>
 
+                        <Text className="text-gray-600 text-center text-xl leading-relaxed"><strong>Estos son sus datos de Ingreso</strong></Text>
 
-                        {/* Caja de Credenciales */}
-                        <Section className="bg-blue-50 rounded-md p-6 my-6 text-center border border-blue-100">
-                            <Text className="text-gray-800 m-0 text-base">
-                                <strong>Usuario:</strong> {correoUsuario}
-                            </Text>
-                            <text className="text-gray-800 m-0 mt-2 text-base">
-                                <strong>Contraseña</strong> <span className="font-mono bg-white px-2 py-1 rounded border border-gray-200">{passwordGenerada}</span>
-                            </text>
+                        <Section className="bg-blue-50 rounded-md py-3 px-6 my-6 text-center border border-blue-100">
+                            <Text className="text-blue-800 text-center text-xl leading-relaxed"><strong>Usuario:</strong></Text>
+
+                            {/* Caja de Credenciales con T mayúscula */}
+
+                            <Section className="bg-gray-50 rounded-md py-3 px-6 my-6 text-center border border-blue-100">
+                                <Text className="text-gray-800 my-0 text-2xl">
+                                    <strong>{correoUsuario}</strong>
+                                </Text>
+                            </Section>
+
+                            <Text className="text-blue-800 text-center text-xl leading-relaxed"><strong>Contraseña:</strong></Text>
+
+                            {/* Caja de Credenciales con T mayúscula */}
+                            <Section className="bg-gray-50 rounded-md py-3 px-6 my-6 text-center border border-blue-100">
+                                <Text className="text-gray-800 my-0 text-2xl">
+                                    <strong>{passwordGenerada}</strong>
+                                </Text>
+                            </Section>
                         </Section>
 
                         {/* Call to Action */}
@@ -83,15 +97,7 @@ export default function CredencialesTemplate({
                             </Button>
                         </Section>
 
-                        <Section className="bg-[#181b21] p-6 text-center">
-                            <Img
-                                src="https://andescoeventos.com/logo-andesco.png"
-                                width="150"
-                                height="auto"
-                                alt="Andesco"
-                                className="mx-auto grayscale opacity-80"
-                            />
-                        </Section>
+
 
                         <Hr className="my-6 border-gray-200" />
                     </Container>

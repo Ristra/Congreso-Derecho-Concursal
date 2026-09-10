@@ -86,12 +86,12 @@ export async function POST(request) {
                     nombreUsuario: usuario.nombre,
                     correoUsuario: usuario.cedula,
                     passwordGenerada: passwordPlano,
-                    urlLogin: 'https://andescoeventos.com/login'
+                    urlLogin: 'https://congreso.derechoconcursal.org/login'
                 }));
 
                 // Envío
                 await transporter.sendMail({
-                    from: `"Seminario Andesco" <${process.env.SMTP_USER}>`,
+                    from: `"Congreso Derecho Concursal" <${process.env.SMTP_USER}>`,
                     to: usuario.email,
                     subject: 'Bienvenido a el XX Congreso Colombiano de Derecho Concursal',
                     html: correoHtml,
