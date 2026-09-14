@@ -328,7 +328,7 @@ export async function POST(request) {
             const baseQuorum = configRows.length > 0 ? parseFloat(configRows[0].quorum_base) : 100;
 
             const [usuarios] = await pool.query(`
-              SELECT u.nombre, u.nombre_empresa, u.coeficiente, u.estado, u.ultimo_login, u.id_representante, u.minutos_acumulados,
+              SELECT u.nombre, u.nombre_empresa, u.coeficiente, u.estado, u.ultimo_login, u.id_representante, u.minutos_acumulados, u.es_generico,
                      a.modo_asistencia, a.celular, a.ip, a.primer_login, rep.nombre as nombre_representante_legal
               FROM usuarios u
               LEFT JOIN asistencia a ON u.id = a.usuario_id
@@ -363,7 +363,8 @@ export async function POST(request) {
             }
 
             let totalCoeficientePresente = 0;
-            let totalPresentes = 0;
+            let totalPresentesReales = 0;
+            let totalPresentesGenericos = 0;
             let totalPoderes = 0;
             let asistentesVirtual = 0;
             let asistentesPresencial = 0;
@@ -392,7 +393,7 @@ export async function POST(request) {
                 let startDate = inicioEvento;
                 let endDate = fechaCierre;
 
-                if (m > 0 || u.estado === 'Online' ) {
+                if (m > 0 || u.estado === 'Online') {
 
                     // ========================================================
                     // 1. REGLA DE HORA DE INICIO (Intacta)
@@ -449,16 +450,22 @@ export async function POST(request) {
                 }
 
                 const isPresenteReporte = clasificacion === 'Presente';
+                const esGenerico = u.es_generico === 1 || u.es_generico === true;
 
                 if (isPresenteReporte) {
-                    totalCoeficientePresente += coef;
-                    totalPresentes++;
-                    if (u.modo_asistencia === 'Presencial') {
-                        asistentesPresencial++;
-                        clasificacion = 'Presencial';
-                    } else {
-                        asistentesVirtual++;
+                    if (esGenerico) {
+                        totalPresentesGenericos++;
                         clasificacion = 'Virtual';
+                    } else {
+                        totalCoeficientePresente += coef;
+                        totalPresentesReales++;
+                        if (u.modo_asistencia === 'Presencial') {
+                            asistentesPresencial++;
+                            clasificacion = 'Presencial';
+                        } else {
+                            asistentesVirtual++;
+                            clasificacion = 'Virtual';
+                        }
                     }
                 } else {
                     clasificacion = 'Ausente';
@@ -475,7 +482,8 @@ export async function POST(request) {
                     hora_inicio: horaInicioStr,
                     hora_fin: horaFinStr,
                     tiempo_total: tiempoTotal,
-                    ip: u.ip || 'No registrada'
+                    ip: u.ip || 'No registrada',
+                    es_generico: u.es_generico === 1 || u.es_generico === true
                 };
             });
 
@@ -490,30 +498,38 @@ export async function POST(request) {
                 nombre_evento: 'Evento',
                 fecha_evento_texto: ''
             };
+            
+            const genericos = usuarios.filter(u => (u.es_generico === 1 || u.es_generico === true));
+            const reales = usuarios.filter(u => !(u.es_generico === 1 || u.es_generico === true));
+            const totalRegistradosReales = reales.length;
+            const totalRegistradosGenericos = genericos.length;
 
-            const totalRegistrados = usuarios.length;
             const usuariosConectados = usuarios.filter(u => u.minutos_acumulados > 0 || u.primer_login !== null);
-            const totalConectados = usuariosConectados.length;
-            const porcentajeAsistenciaReal = totalRegistrados > 0
-                ? (totalPresentes / totalRegistrados) * 100
+            //const totalConectados = usuariosConectados.length;
+
+            const porcentajeAsistenciaReal = totalRegistradosReales > 0
+                ? (totalPresentesReales / totalRegistradosReales) * 100
                 : 0;
 
-            const totalMinutosTodos = usuariosConectados.reduce((acc,curr) => acc + (curr.minutos_acumulados || 0), 0);
+            const totalMinutosTodos = usuariosConectados.reduce((acc, curr) => acc + (curr.minutos_acumulados || 0), 0);
 
             const stats = {
-                total_registrados: totalRegistrados,
+                total_registrados: totalRegistradosReales,
+                total_genericos_registrados: totalRegistradosGenericos,
                 info_carta: infoEventos,
                 total_minutos: totalMinutosTodos,
-                total_usuarios_habiles: totalRegistrados,
+                total_usuarios_habiles: totalRegistradosReales,
                 quorum_base_configurado: baseQuorum.toFixed(2),
                 total_coeficiente_presente: totalCoeficientePresente.toFixed(2),
                 porcentaje_asistencia: porcentajeAsistenciaReal.toFixed(2),
-                total_presentes_fisicos: totalPresentes,
+                total_presentes_fisicos: totalPresentesReales,
                 virtual: asistentesVirtual,
                 presencial: asistentesPresencial,
+                total_presentes: totalPresentesReales + totalPresentesGenericos,
+                total_genericos_presentes: totalPresentesGenericos,
                 poderes: totalPoderes
             };
-           
+
             return NextResponse.json({ success: true, reportData: reporteUsuarios, stats, preguntasPendientes, preguntasRespondidas });
         }
 

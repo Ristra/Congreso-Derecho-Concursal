@@ -23,7 +23,7 @@ export async function POST(request) {
       const email = u['Email'] || u['email'];
       const password = u['Password'] || u['password'];
       const cedula = u['Cedula'] || u['cedula'];
-
+      const generico = u['Generico'] || u['generico']; 
 
 
       const coeficiente = u['Coeficiente'] || u['coeficiente'] || 1.00;
@@ -50,8 +50,8 @@ export async function POST(request) {
 
         if (existing.length === 0) {
           const [result] = await pool.query(
-            'INSERT INTO usuarios (nombre, nombre_empresa, nit, email, password, coeficiente, rol, estado, cedula) VALUES (?, ?, ?, ?,  ?, ?, ?, ?, ?)',
-            [nombre, empresa, nit, email, passwordToStore, coeficiente, rol, 'Offline', cedula]
+            'INSERT INTO usuarios (nombre, nombre_empresa, nit, email, password, coeficiente, rol, estado, cedula, es_generico) VALUES (?, ?, ?, ?,  ?, ?, ?, ?, ?, ?)',
+            [nombre, empresa, nit, email, passwordToStore, coeficiente, rol, 'Offline', cedula, generico]
           );
           userId = result.insertId;
           createdCount++;

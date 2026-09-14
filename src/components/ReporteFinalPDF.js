@@ -75,8 +75,9 @@ const ReporteFinalPDF = ({ data, stats, preguntas = [], preguntasRespondidas=[] 
 
   // FILTRADO ESTRICTO DE LISTAS PARA TABLAS SEPARADAS
   const presenciales = data.filter(u => u.clasificacion_final === 'Presencial');
-  const virtuales = data.filter(u => u.clasificacion_final === 'Virtual');
-  const ausentes = data.filter(u => u.clasificacion_final === 'Ausente');
+  const virtuales = data.filter(u => u.clasificacion_final === 'Virtual' && !u.es_generico);
+  const genericos = data.filter(u => u.es_generico === 1 || u.es_generico === true && u.clasificacion_final === 'Virtual');
+  const ausentes = data.filter(u => !u.es_generico && u.clasificacion_final === 'Ausente' );
 
   // 1. Extraemos los datos que nos mandó el backend
 // Usamos nombres distintos (pStats, pInfoCarta) para no chocar con las props
@@ -102,11 +103,13 @@ const resumenEjecutivoTexto = `Bogotá, D.C., ${pInfoCarta.fecha_evento_texto}
 Señores:
 ${pInfoCarta.cliente_empresa}
 
-Compartimos los resultados de gestión y asistencia obtenidos durante el ${pInfoCarta.nombre_evento}, evento desarrollado en modalidad virtual/híbrido el pasado ${pInfoCarta.fecha_evento_texto} a través de https://andescoeventos.com.
+Compartimos los resultados de gestión y asistencia obtenidos durante el ${pInfoCarta.nombre_evento}, evento desarrollado en modalidad virtual/híbrido el pasado ${pInfoCarta.fecha_evento_texto} a través de https://congreso.derechoconcursal.org.
 
-Alcance de la plataforma: Mediante un proceso de carga masiva automatizada, se crearon y habilitaron con éxito ${stats.total_registrados} usuarios en el sistema.
+Alcance de la plataforma: Mediante un proceso de carga masiva automatizada, se crearon y habilitaron con éxito ${stats.total_registrados} usuarios reales en el sistema, complementados con ${stats.total_genericos_registrados} conexiones genéricas de soporte.
 
-Asistencia y concurrencia: Se registró la conexión de ${stats.total_presentes_fisicos} usuarios, lo que representa un sólido ${stats.porcentaje_asistencia}% de asistencia sobre el total de los registros.
+Asistencia y concurrencia: Se registró la conexión de ${stats.total_presentes_fisicos} usuarios reales, lo que representa un sólido ${stats.porcentaje_asistencia}% de asistencia sobre el total de usuarios reales registrados. Adicionalmente se registraron ${stats.total_genericos_presentes} conexiones genéricas.
+
+Total de conexiones: El total consolidado de conexiones (reales + genéricas) fue de ${stats.total_presentes}.
 
 Retención de audiencia: El tiempo promedio de conexión por usuario fue de ${textoTiempoPromedio}.
 Adjuntamos igualmente el detalle individual de asistencia y permanencia en la plataforma.
@@ -159,13 +162,14 @@ console.log("CARTA GENERADA CORRECTAMENTE EN EL COMPONENTE:\n", resumenEjecutivo
         <Text style={styles.sectionTitle}>Resumen Ejecutivo</Text>
         <View style={styles.statsContainer}>
             <View style={styles.statBox}><Text style={styles.statLabel}>% Asistencia</Text><Text style={{...styles.statValue, color: '#2563EB'}}>{stats.porcentaje_asistencia}%</Text></View>           
-            <View style={styles.statBox}><Text style={styles.statLabel}>Presenciales</Text><Text style={styles.statValue}>{stats.presencial}</Text></View>
+            <View style={styles.statBox}><Text style={styles.statLabel}>Genéricos Presentes</Text><Text style={styles.statValue}>{stats.total_genericos_presentes}</Text></View> {/** Al no haber 'Presenciales' aquí se pondrá la info. de los usuarios genéricos */}
             <View style={styles.statBox}><Text style={styles.statLabel}>Virtuales / Remotos</Text><Text style={styles.statValue}>{stats.virtual}</Text></View>
-            <View style={styles.statBox}><Text style={styles.statLabel}>Total Presentes</Text><Text style={styles.statValue}>{stats.total_presentes_fisicos}</Text></View>
+            <View style={styles.statBox}><Text style={styles.statLabel}>Total Presentes</Text><Text style={styles.statValue}>{stats.total_presentes}</Text></View>
             <View style={styles.statBox}><Text style={styles.statLabel}>Total de Usuarios</Text><Text style={styles.statValue}>{stats.total_registrados}</Text></View>
         </View>
 
         {/* TABLA 1: ASISTENTES PRESENCIALES */}
+        {/*
         <Text style={styles.sectionTitle}>Asistentes Presenciales ({presenciales.length})</Text>
         <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableHeader]} fixed>
@@ -186,7 +190,7 @@ console.log("CARTA GENERADA CORRECTAMENTE EN EL COMPONENTE:\n", resumenEjecutivo
                     <View style={[styles.tableCol, styles.wTimeTotal, styles.lastCol]}><Text>{u.tiempo_total}</Text></View>
                 </View>
             )) : <View style={styles.tableRow}><Text style={{padding:4, color:'#999'}}>Ninguno</Text></View>}
-        </View>
+        </View>*/}
 
         {/* TABLA 2: ASISTENTES VIRTUALES */}
         <Text style={styles.sectionTitle}>Asistentes Virtuales ({virtuales.length})</Text>
@@ -200,6 +204,29 @@ console.log("CARTA GENERADA CORRECTAMENTE EN EL COMPONENTE:\n", resumenEjecutivo
                 <View style={[styles.tableCol, styles.wTimeTotal, styles.lastCol]}><Text>Tiempo Total</Text></View>
             </View>
             {virtuales.length > 0 ? virtuales.map((u, i) => (
+                <View key={i} style={styles.tableRow} wrap={false}>
+                    <View style={[styles.tableCol, styles.wEmp]}><Text>{u.empresa}</Text></View>
+                    <View style={[styles.tableCol, styles.wUser]}><Text>{u.usuario}</Text></View>
+                    <View style={[styles.tableCol, styles.wIp]}><Text>{u.ip}</Text></View>
+                    <View style={[styles.tableCol, styles.wTime]}><Text>{u.hora_inicio}</Text></View>
+                    <View style={[styles.tableCol, styles.wTimeEnd, styles.lastCol]}><Text>{u.hora_fin}</Text></View>
+                    <View style={[styles.tableCol, styles.wTimeTotal, styles.lastCol]}><Text>{u.tiempo_total}</Text></View>
+                </View>
+            )) : <View style={styles.tableRow}><Text style={{padding:4, color:'#999'}}>Ninguno</Text></View>}
+        </View>
+
+        {/* TABLA 2: ASISTENTES GENERICOS */}
+        <Text style={styles.sectionTitle}>Asistentes Genéricos ({genericos.length})</Text>
+        <View style={styles.table}>
+            <View style={[styles.tableRow, styles.tableHeader]} fixed>
+                <View style={[styles.tableCol, styles.wEmp]}><Text>Empresa</Text></View>
+                <View style={[styles.tableCol, styles.wUser]}><Text>Usuario</Text></View>
+                <View style={[styles.tableCol, styles.wIp]}><Text>IP</Text></View>
+                <View style={[styles.tableCol, styles.wTime]}><Text>Inicio</Text></View>
+                <View style={[styles.tableCol, styles.wTimeEnd, styles.lastCol]}><Text>Cierre</Text></View>
+                <View style={[styles.tableCol, styles.wTimeTotal, styles.lastCol]}><Text>Tiempo Total</Text></View>
+            </View>
+            {genericos.length > 0 ?genericos.map((u, i) => (
                 <View key={i} style={styles.tableRow} wrap={false}>
                     <View style={[styles.tableCol, styles.wEmp]}><Text>{u.empresa}</Text></View>
                     <View style={[styles.tableCol, styles.wUser]}><Text>{u.usuario}</Text></View>

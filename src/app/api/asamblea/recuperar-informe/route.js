@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/lib/db'; 
+import { pool } from '@/lib/db';
 
 export async function GET() {
     try {
@@ -10,7 +10,7 @@ export async function GET() {
             FROM control_asamblea 
             ORDER BY id DESC LIMIT 1
         `);
-        
+
         if (!asambleaLast || asambleaLast.length === 0) {
             return NextResponse.json({ success: false, error: 'No hay eventos registrados' }, { status: 404 });
         }
@@ -20,11 +20,11 @@ export async function GET() {
         const inicioEvento = evento.fecha_inicio ? new Date(evento.fecha_inicio) : new Date();
         const fechaCierre = evento.fecha_fin ? new Date(evento.fecha_fin) : new Date();
         const duracionEventoMinutos = Math.max(1, Math.floor((fechaCierre - inicioEvento) / 60000));
-        const minutosRequeridos = duracionEventoMinutos * 0; 
+        const minutosRequeridos = duracionEventoMinutos * 0;
 
         // 2. Extraer todos los usuarios (Con la misma consulta de tu cierre en caliente)
         const [usuarios] = await pool.query(`
-          SELECT u.nombre, u.nombre_empresa, u.coeficiente, u.estado, u.ultimo_login, u.id_representante, u.minutos_acumulados,
+          SELECT u.nombre, u.nombre_empresa, u.coeficiente, u.estado, u.ultimo_login, u.id_representante, u.minutos_acumulados, u.es_generico,
                  a.modo_asistencia, a.celular, a.ip, a.primer_login, rep.nombre as nombre_representante_legal
           FROM usuarios u
           LEFT JOIN asistencia a ON u.id = a.usuario_id
@@ -58,7 +58,8 @@ export async function GET() {
 
         // 4. Variables para las estadísticas
         let totalCoeficientePresente = 0;
-        let totalPresentes = 0;
+        let totalPresentesReales = 0;
+        let totalPresentesGenericos = 0;
         let totalPoderes = 0;
         let asistentesVirtual = 0;
         let asistentesPresencial = 0;
@@ -68,83 +69,88 @@ export async function GET() {
 
         // 5. Mapeo de Usuarios (LA LÓGICA CLONADA EXACTA DE TU OTRO BOTÓN)
         const reporteUsuarios = usuarios.map(u => {
-                const coef = parseFloat(u.coeficiente || 0);
-                let m = parseInt(u.minutos_acumulados) || 0;
+            const coef = parseFloat(u.coeficiente || 0);
+            let m = parseInt(u.minutos_acumulados) || 0;
 
-                let horaInicioStr = '-';
-                let horaFinStr = '-';
-                let tiempoTotal = '0m';
-                let clasificacion = 'Ausente';
+            let horaInicioStr = '-';
+            let horaFinStr = '-';
+            let tiempoTotal = '0m';
+            let clasificacion = 'Ausente';
 
-                const loginDate = u.ultimo_login ? new Date(u.ultimo_login) : null;
-                const primerLoginDate = u.primer_login ? new Date(u.primer_login) : null;
-                // VARIABLE PARA LA HORA EXACTA DE SALIDA
-                const logoutDate = u.ultimo_logout ? new Date(u.ultimo_logout) : null;
+            const loginDate = u.ultimo_login ? new Date(u.ultimo_login) : null;
+            const primerLoginDate = u.primer_login ? new Date(u.primer_login) : null;
+            // VARIABLE PARA LA HORA EXACTA DE SALIDA
+            const logoutDate = u.ultimo_logout ? new Date(u.ultimo_logout) : null;
 
-                let startDate = inicioEvento;
-                let endDate = fechaCierre;
+            let startDate = inicioEvento;
+            let endDate = fechaCierre;
 
-                if (m > 0 || u.estado === 'Online') {
-                    
-                    // ========================================================
-                    // 1. REGLA DE HORA DE INICIO (Intacta)
-                    // ========================================================
-                    if (primerLoginDate) {
-                        if (primerLoginDate < inicioEvento) {
-                            startDate = inicioEvento;
-                        } else {
-                            startDate = primerLoginDate;
-                        }
-                    } else if (loginDate && loginDate >= inicioEvento) {
-                        startDate = loginDate;
-                    }
+            if (m > 0 || u.estado === 'Online') {
 
-                    // ========================================================
-                    // 2. REGLA DE HORA DE CIERRE (Corregida con ultimo_logout)
-                    // ========================================================
-                    if (u.estado === 'Online') {
-                        endDate = fechaCierre; // Se quedó hasta el final
-                    } else if (logoutDate && logoutDate >= startDate && logoutDate <= fechaCierre) {
-                        // Si fue desconectado, usamos la hora milimétrica en la que salió
-                        endDate = logoutDate;
+                // ========================================================
+                // 1. REGLA DE HORA DE INICIO (Intacta)
+                // ========================================================
+                if (primerLoginDate) {
+                    if (primerLoginDate < inicioEvento) {
+                        startDate = inicioEvento;
                     } else {
-                        // Si no hay fecha de logout, sumamos sus minutos a su inicio
-                        endDate = new Date(startDate.getTime() + (m * 60000));
-                        if (endDate > fechaCierre) endDate = fechaCierre;
+                        startDate = primerLoginDate;
                     }
-
-                    if (startDate > endDate) startDate = inicioEvento;
-
-                    // ========================================================
-                    // 3. BLINDAJE VISUAL Y TOPES
-                    // ========================================================
-                    let minutosVisuales = Math.floor((endDate - startDate) / 60000);
-                    if (minutosVisuales < 0) minutosVisuales = 0;
-                    
-                    let minutosFinalesReporte = m > 0 ? m : minutosVisuales;
-                    
-                    if (minutosFinalesReporte > minutosVisuales) {
-                        minutosFinalesReporte = minutosVisuales;
-                    }
-                    if (minutosFinalesReporte > duracionEventoMinutos) {
-                        minutosFinalesReporte = duracionEventoMinutos;
-                    }
-
-                    horaInicioStr = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-                    horaFinStr = endDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-                    
-                    const hrs = Math.floor(minutosFinalesReporte / 60);
-                    const mins = minutosFinalesReporte % 60;
-                    tiempoTotal = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-                    
-                    clasificacion = minutosFinalesReporte >= minutosRequeridos ? 'Presente' : 'Ausente';
+                } else if (loginDate && loginDate >= inicioEvento) {
+                    startDate = loginDate;
                 }
 
-                const isPresenteReporte = clasificacion === 'Presente';
+                // ========================================================
+                // 2. REGLA DE HORA DE CIERRE (Corregida con ultimo_logout)
+                // ========================================================
+                if (u.estado === 'Online') {
+                    endDate = fechaCierre; // Se quedó hasta el final
+                } else if (logoutDate && logoutDate >= startDate && logoutDate <= fechaCierre) {
+                    // Si fue desconectado, usamos la hora milimétrica en la que salió
+                    endDate = logoutDate;
+                } else {
+                    // Si no hay fecha de logout, sumamos sus minutos a su inicio
+                    endDate = new Date(startDate.getTime() + (m * 60000));
+                    if (endDate > fechaCierre) endDate = fechaCierre;
+                }
 
-                if (isPresenteReporte) {
+                if (startDate > endDate) startDate = inicioEvento;
+
+                // ========================================================
+                // 3. BLINDAJE VISUAL Y TOPES
+                // ========================================================
+                let minutosVisuales = Math.floor((endDate - startDate) / 60000);
+                if (minutosVisuales < 0) minutosVisuales = 0;
+
+                let minutosFinalesReporte = m > 0 ? m : minutosVisuales;
+
+                if (minutosFinalesReporte > minutosVisuales) {
+                    minutosFinalesReporte = minutosVisuales;
+                }
+                if (minutosFinalesReporte > duracionEventoMinutos) {
+                    minutosFinalesReporte = duracionEventoMinutos;
+                }
+
+                horaInicioStr = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+                horaFinStr = endDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+
+                const hrs = Math.floor(minutosFinalesReporte / 60);
+                const mins = minutosFinalesReporte % 60;
+                tiempoTotal = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+
+                clasificacion = minutosFinalesReporte >= minutosRequeridos ? 'Presente' : 'Ausente';
+            }
+
+            const isPresenteReporte = clasificacion === 'Presente';
+            const esGenerico = u.es_generico === 1 || u.es_generico === true;
+
+            if (isPresenteReporte) {
+                if (esGenerico) {
+                    totalPresentesGenericos++;
+                    clasificacion = 'Virtual';
+                } else {
                     totalCoeficientePresente += coef;
-                    totalPresentes++;
+                    totalPresentesReales++;
                     if (u.modo_asistencia === 'Presencial') {
                         asistentesPresencial++;
                         clasificacion = 'Presencial';
@@ -152,46 +158,56 @@ export async function GET() {
                         asistentesVirtual++;
                         clasificacion = 'Virtual';
                     }
-                } else {
-                    clasificacion = 'Ausente';
                 }
+            } else {
+                clasificacion = 'Ausente';
+            }
 
-                return {
-                    usuario: u.nombre || u.nombre_empresa,
-                    empresa: u.nombre_empresa || '-',
-                    email: u.email,
-                    coeficiente: coef.toFixed(2),
-                    estado: isPresenteReporte ? 'Presente' : 'Ausente',
-                    modo: u.modo_asistencia || 'No definido',
-                    clasificacion_final: clasificacion,
-                    hora_inicio: horaInicioStr,
-                    hora_fin: horaFinStr,
-                    tiempo_total: tiempoTotal,
-                    ip: u.ip || 'No registrada'
-                };
-            });
+            return {
+                usuario: u.nombre || u.nombre_empresa,
+                empresa: u.nombre_empresa || '-',
+                email: u.email,
+                coeficiente: coef.toFixed(2),
+                estado: isPresenteReporte ? 'Presente' : 'Ausente',
+                modo: u.modo_asistencia || 'No definido',
+                clasificacion_final: clasificacion,
+                hora_inicio: horaInicioStr,
+                hora_fin: horaFinStr,
+                tiempo_total: tiempoTotal,
+                ip: u.ip || 'No registrada',
+                es_generico: u.es_generico === 1 || u.es_generico === true
+            };
+        });
 
         // 6. Empaquetar Stats y retornar
-        const totalRegistrados = usuarios.length;
+        const genericos = usuarios.filter(u => (u.es_generico === 1 || u.es_generico === true));
+        const reales = usuarios.filter(u => !(u.es_generico === 1 || u.es_generico === true));
+        const totalRegistradosReales = reales.length;
+        const totalRegistradosGenericos = genericos.length;
+
         const usuariosConectados = usuarios.filter(u => u.minutos_acumulados > 0 || u.primer_login !== null);
-        const totalConectados = usuariosConectados.length;
-        const porcentajeAsistenciaReal = totalRegistrados > 0
-            ? (totalPresentes / totalRegistrados) * 100
+        //const totalConectados = usuariosConectados.length;
+
+        const porcentajeAsistenciaReal = totalRegistradosReales > 0
+            ? (totalPresentesReales / totalRegistradosReales) * 100
             : 0;
 
-        const totalMinutosTodos = usuariosConectados.reduce((acc,curr) => acc + (curr.minutos_acumulados || 0), 0);
+        const totalMinutosTodos = usuariosConectados.reduce((acc, curr) => acc + (curr.minutos_acumulados || 0), 0);
 
         const stats = {
-            total_registrados: totalRegistrados,
-            total_minutos:totalMinutosTodos,
+            total_registrados: totalRegistradosReales,
+            total_genericos_registrados: totalRegistradosGenericos,
             info_carta: evento,
-            total_usuarios_habiles: totalRegistrados,
+            total_minutos: totalMinutosTodos,
+            total_usuarios_habiles: totalRegistradosReales,
             quorum_base_configurado: baseQuorum.toFixed(2),
             total_coeficiente_presente: totalCoeficientePresente.toFixed(2),
             porcentaje_asistencia: porcentajeAsistenciaReal.toFixed(2),
-            total_presentes_fisicos: totalPresentes,
+            total_presentes_fisicos: totalPresentesReales,
             virtual: asistentesVirtual,
             presencial: asistentesPresencial,
+            total_presentes: totalPresentesReales + totalPresentesGenericos,
+            total_genericos_presentes: totalPresentesGenericos,
             poderes: totalPoderes
         };
 
