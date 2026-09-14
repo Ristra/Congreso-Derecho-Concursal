@@ -11,7 +11,7 @@ import { decrypt } from '@/lib/encryption';
 const transporter = nodemailer.createTransport({
     pool: true, // Mantiene la conexión abierta para lotes
     maxConnections: 5, // Permite enviar 5 correos simultáneos
-    host: 'smtp.gmail.com',
+    host: "mail.derechoconcursal.org",
     port: 465,
     secure: true,
     auth: {

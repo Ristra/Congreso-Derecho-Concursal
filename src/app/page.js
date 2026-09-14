@@ -559,14 +559,21 @@ export default function SalaVirtual() {
 
 
   return (
+    <div
+      className="min-h-[100dvh] w-full m-0 overflow-x-hidden flex flex-col items-center bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundPosition: "center 0%",
+        backgroundImage: "linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), url('/fondo-opcion2.jpg')"
+      }}
+    >
     <div className={`mx-auto space-y-6 pb-20 p-4 transition-all duration-700 ${isTheaterMode ? 'max-w-[98%]' : 'max-w-7xl'}`}>
 
       {/* HEADER: Título y Datos del Usuario */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-800">Sala del Evento</h1>
+        {/*<h1 className="text-xl md:text-2xl font-bold text-white">Sala del Evento</h1>*/}
         {!isAdmin && user && (
           <div className="text-right w-full md:w-auto">
-            <p className="text-sm font-bold text-gray-700 mb-1">{user.nombre || user.nombre_empresa}</p>
+            {/*<p className="text-sm font-bold text-gray-700 mb-1">{user.nombre || user.nombre_empresa}</p>*/}
             <div className="flex flex-wrap items-center justify-end gap-2">
 
               {data.representadosNombres && data.representadosNombres.length > 0 && (
@@ -583,10 +590,10 @@ export default function SalaVirtual() {
       </div>
 
       {/* GRID INTELIGENTE: Cambia de forma sin recargar componentes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 ">
 
         {/* 1. EL VIDEO (Se estira a 3 columnas en modo cine) */}
-        <div className={`relative w-full bg-black rounded-xl overflow-hidden shadow-2xl transition-all duration-700 lg:row-start-1 lg:col-start-1 ${isTheaterMode ? 'lg:col-span-3 aspect-video md:aspect-[21/9] max-h-[85vh]' : 'lg:col-span-2 aspect-video'}`}>
+        <div className={`relative w-full bg-black rounded-xl overflow-hidden mt-20 shadow-2xl transition-all duration-700 lg:row-start-1 lg:col-start-1 ${isTheaterMode ? 'lg:col-span-3 aspect-video md:aspect-[21/9] max-h-[85vh]' : 'lg:col-span-2 aspect-video'}`}>
           <button
             onClick={() => setIsTheaterMode(!isTheaterMode)}
             className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/80 text-white px-3 py-1.5 rounded-lg backdrop-blur-md transition-all shadow-lg border border-white/20 flex items-center gap-2 text-sm font-medium"
@@ -859,7 +866,7 @@ export default function SalaVirtual() {
               </div>
             ) : (
               <div className="sticky top-6">
-                <div className="bg-gradient-to-r from-blue-50 to-white border border-blue-100 p-5 rounded-xl shadow-sm">
+                <div className="bg-white/40 backdrop-blur-md border border-white/50 p-5 rounded-xl shadow-lg">
                   <p className="text-xs uppercase text-gray-400 font-bold tracking-wider mb-1">Bienvenido</p>
                   <p className="text-lg font-bold text-blue-900">{user.nombre}</p>
                   <div className="flex items-center gap-2 mt-2">
@@ -886,6 +893,7 @@ export default function SalaVirtual() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

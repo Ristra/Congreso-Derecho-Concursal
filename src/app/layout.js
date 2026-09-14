@@ -329,7 +329,7 @@ export default function RootLayout({ children }) {
                 >
                     {/* Header Sidebar Desktop */}
                     <div className="h-16 hidden md:flex items-center px-4 bg-[#181b21]/50 border-b border-gray-700 justify-between">
-                        <h1> 
+                        <h1>
                             <Image
                                 src="/logo-congreso.png"
                                 alt="Logo Congreso Derecho Concursal"
@@ -449,7 +449,10 @@ export default function RootLayout({ children }) {
                         </button>
                     </header>
 
-                    <main className="flex-1 overflow-auto bg-gray-100 p-4 md:p-6 pt-20 md:pt-6">
+                    <main className={`flex-1 overflow-auto ${pathname.includes('/')
+                            ? "p-0 m-0 bg-transparent"
+                            : "bg-gray-100 p-4 md:p-6 pt-20 md:pt-6"
+                        }`}>
                         {children}
                     </main>
                 </div>
@@ -525,8 +528,8 @@ export default function RootLayout({ children }) {
                                         type="submit"
                                         disabled={!bannerPatrocinadores || uploadingSponsors}
                                         className={`flex-1 py-2 px-4 rounded-md text-white font-medium transition ${!bannerPatrocinadores || uploadingSponsors
-                                                ? 'bg-gray-400 cursor-not-allowed'
-                                                : 'bg-indigo-600 hover:bg-indigo-700'
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-indigo-600 hover:bg-indigo-700'
                                             }`}
                                     >
                                         {uploadingSponsors ? 'Subiendo...' : 'Guardar Banner'}

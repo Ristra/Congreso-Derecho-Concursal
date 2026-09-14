@@ -38,7 +38,7 @@ export default function CredencialesTemplate({
                             <Img
                                 src="https://congreso.derechoconcursal.org/images/bannerCorreo.png"
                                 width="455"
-                                height="210"
+                                height="151"
                                 alt="Congreso Derecho Concursal"
                                 className="mx-auto"
                             />
