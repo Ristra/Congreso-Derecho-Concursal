@@ -563,7 +563,7 @@ export default function SalaVirtual() {
       className="min-h-[100dvh] w-full m-0 overflow-x-hidden flex flex-col items-center bg-cover bg-center bg-no-repeat"
       style={{
         backgroundPosition: "center 0%",
-        backgroundImage: "linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), url('/fondo-opcion2.jpg')"
+        backgroundImage: "linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), url('/back_2.jpeg')"
       }}
     >
     <div className={`mx-auto space-y-6 pb-20 p-4 transition-all duration-700 ${isTheaterMode ? 'max-w-[98%]' : 'max-w-7xl'}`}>
